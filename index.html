@@ -107,11 +107,16 @@
 
             </div>
 
-            <!-- 5-Scalloped Bottom Shelf Element -->
+
+        </div>
+    </div>
+
+    <!-- About and Why It Works Scroll Section -->
+    <div class="scroll-section">
+        <div class="scroll-container">
+
+            <!-- Scalloped Bottom Shelf Element (merged) -->
             <div class="bottom-shelf">
-                <svg class="scallop-shape" viewBox="0 0 500 150">
-                    <path d="M0,150 L500,150 L500,120 C460,120 440,95 400,95 C365,95 350,45 300,45 C270,45 260,15 250,15 C240,15 230,45 200,45 C150,45 135,95 100,95 C60,95 40,120 0,120 Z" />
-                </svg>
                 <div class="shelf-content">
                     <span class="see-more">See more</span>
                     <button class="arrow-btn" aria-label="Scroll Down">
@@ -122,13 +127,6 @@
                     </button>
                 </div>
             </div>
-
-        </div>
-    </div>
-
-    <!-- About and Why It Works Scroll Section -->
-    <div class="scroll-section">
-        <div class="scroll-container">
 
             <!-- About Course Row -->
             <div id="about" class="scroll-row">
@@ -760,6 +758,15 @@
             </div>
         </div>
     </footer>
+
+    <!-- Responsive Scallop Clip Path definition -->
+    <svg width="0" height="0" style="position: absolute;">
+        <defs>
+            <clipPath id="scroll-clip" clipPathUnits="userSpaceOnUse">
+                <path id="scroll-clip-path" d="" />
+            </clipPath>
+        </defs>
+    </svg>
 
     <!-- Link to Modular Javascript -->
     <script src="script.js"></script>
