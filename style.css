@@ -3,14 +3,23 @@
    ========================================================================== */
 
 :root {
-    --neon-yellow: #d946ef; /* Vibrant pink-violet (repurposed for dark night theme) */
-    --sky-blue: #bf5af2; /* Repurposed as vibrant violet-purple for dark night theme */
+    --neon-yellow: #dffe00; /* Day theme vibrant lime-yellow */
+    --sky-blue: #5da5e3; /* Day theme sky blue */
     --pink-accent: #f09cb8;
     --pink-accent-hover: #e08ba7;
     --text-white: #ffffff;
     --text-dark: #0f172a;
     --text-secondary: #64748b;
     --border-color: #e2e8f0;
+    --body-bg: linear-gradient(180deg, #59a2e1 0%, #a2cff7 100%);
+    --star-display: none;
+}
+
+body.theme-night {
+    --neon-yellow: #d946ef; /* Night theme vibrant pink-violet */
+    --sky-blue: #bf5af2; /* Night theme vibrant violet-purple */
+    --body-bg: linear-gradient(180deg, #090514 0%, #170d38 50%, #3d1b54 100%);
+    --star-display: block;
 }
 
 * {
@@ -21,7 +30,7 @@
 
 body {
     font-family: 'Inter', sans-serif;
-    background: linear-gradient(180deg, #090514 0%, #170d38 50%, #3d1b54 100%);
+    background: var(--body-bg);
     background-attachment: fixed;
     color: var(--text-white);
     min-height: 100vh;
@@ -179,6 +188,9 @@ nav a:hover {
     transform: translateX(-50%);
     pointer-events: none;
     object-fit: contain;
+}
+
+body.theme-night .hero-img {
     animation: chromaShift 40s linear infinite;
 }
 
@@ -2175,6 +2187,7 @@ nav a:hover {
     pointer-events: none;
     z-index: 1;
     overflow: hidden;
+    display: var(--star-display);
 }
 
 .star {
@@ -2201,4 +2214,38 @@ nav a:hover {
     .a3d { 
         animation-duration: 128s; 
     }
+}
+
+/* --- Theme Toggle Switch Button --- */
+#theme-toggle {
+    background: none;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    outline: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+#theme-toggle svg {
+    width: 16px;
+    height: 16px;
+    stroke: white;
+}
+
+#theme-toggle .sun-icon {
+    display: none;
+}
+
+#theme-toggle .moon-icon {
+    display: block;
+}
+
+body.theme-night #theme-toggle .sun-icon {
+    display: block;
+}
+
+body.theme-night #theme-toggle .moon-icon {
+    display: none;
 }

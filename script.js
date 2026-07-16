@@ -7,6 +7,20 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Twinkling Starfield Initialization ---
     createStars();
 
+    // --- Theme Toggle Handler ---
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    if (themeToggleBtn) {
+        themeToggleBtn.addEventListener('click', () => {
+            if (document.body.classList.contains('theme-night')) {
+                document.body.classList.remove('theme-night');
+                localStorage.setItem('theme', 'day');
+            } else {
+                document.body.classList.add('theme-night');
+                localStorage.setItem('theme', 'night');
+            }
+        });
+    }
+
     // --- 1. Hero Scroll Parallax Effect ---
     const giantBgText = document.querySelector('.giant-bg-text');
     const heroImg = document.querySelector('.hero-img');
