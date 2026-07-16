@@ -188,9 +188,6 @@ nav a:hover {
     transform: translateX(-50%);
     pointer-events: none;
     object-fit: contain;
-}
-
-body.theme-night .hero-img {
     animation: chromaShift 40s linear infinite;
 }
 
@@ -1906,18 +1903,6 @@ body.theme-night .hero-img {
     margin-top: -1.6em;
     transform-style: preserve-3d;
     transform: rotateZ(var(--rot)) rotateX(-90deg);
-}
-
-.bike-pink {
-    --bike-color: #ff2a5f;
-}
-
-.bike-yellow {
-    --bike-color: var(--neon-yellow);
-}
-
-.bike-cyan {
-    --bike-color: #00e5ff;
 }
 
 .bike-shadow {
