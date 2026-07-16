@@ -4,6 +4,9 @@
 
 document.addEventListener('DOMContentLoaded', () => {
 
+    // --- Twinkling Starfield Initialization ---
+    createStars();
+
     // --- 1. Hero Scroll Parallax Effect ---
     const giantBgText = document.querySelector('.giant-bg-text');
     const heroImg = document.querySelector('.hero-img');
@@ -432,5 +435,44 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Scroll form slightly to ensure alert visibility
         formAlert.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    // --- Dynamic Twinkling Starfield Generator ---
+    function createStars() {
+        const hero = document.querySelector('.hero');
+        if (!hero) return;
+
+        const starsContainer = document.createElement('div');
+        starsContainer.className = 'stars-container';
+        hero.appendChild(starsContainer);
+
+        const starCount = 75;
+        const colors = ['#ffffff', '#e0f2fe', '#fef08a', '#fbcfe8']; // cosmic palette (white, light blue, soft yellow, soft pink)
+
+        for (let i = 0; i < starCount; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+
+            // Random positions in the top 75% height of the hero section
+            const x = Math.random() * 100;
+            const y = Math.random() * 75;
+
+            // Random sizes (1px to 2.5px)
+            const size = Math.random() * 1.5 + 1;
+
+            // Random animation delay and duration for asynchronous twinkling
+            const delay = Math.random() * 4;
+            const duration = Math.random() * 3 + 2;
+
+            star.style.left = `${x}%`;
+            star.style.top = `${y}%`;
+            star.style.width = `${size}px`;
+            star.style.height = `${size}px`;
+            star.style.animationDelay = `${delay}s`;
+            star.style.animationDuration = `${duration}s`;
+            star.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+
+            starsContainer.appendChild(star);
+        }
     }
 });

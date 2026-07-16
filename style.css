@@ -3,8 +3,8 @@
    ========================================================================== */
 
 :root {
-    --neon-yellow: #dffe00; /* Vibrant lime-yellow from image */
-    --sky-blue: #5da5e3;
+    --neon-yellow: #d946ef; /* Vibrant pink-violet (repurposed for dark night theme) */
+    --sky-blue: #bf5af2; /* Repurposed as vibrant violet-purple for dark night theme */
     --pink-accent: #f09cb8;
     --pink-accent-hover: #e08ba7;
     --text-white: #ffffff;
@@ -21,7 +21,7 @@
 
 body {
     font-family: 'Inter', sans-serif;
-    background: linear-gradient(180deg, #59a2e1 0%, #a2cff7 100%);
+    background: linear-gradient(180deg, #090514 0%, #170d38 50%, #3d1b54 100%);
     background-attachment: fixed;
     color: var(--text-white);
     min-height: 100vh;
@@ -60,16 +60,26 @@ header {
     text-decoration: none;
     color: white;
     line-height: 0.9;
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
 .logo span {
     color: var(--neon-yellow);
 }
 
+.logo-icon {
+    height: 42px;
+    width: auto;
+    display: block;
+    border-radius: 10px;
+}
+
 nav {
     position: absolute;
     left: 50%;
-    transform: translateX(-50%);
+    transform: translate(-50%, -6px);
 }
 
 nav ul {
@@ -133,6 +143,7 @@ nav a:hover {
     width: 100%;
 }
 
+/* Giant Background Text */
 .giant-bg-text {
     position: absolute;
     font-family: 'Bebas Neue', sans-serif;
@@ -146,7 +157,7 @@ nav a:hover {
     width: 100%;
     justify-content: center;
     align-items: center;
-    top: 20%;
+    top: 17%;
     transform: translateY(-50%);
 }
 
@@ -159,7 +170,6 @@ nav a:hover {
     margin-left: 0.03em;
 }
 
-/* Transparent Motorcycle Rider Cutout */
 .hero-img {
     position: absolute;
     z-index: 2;
@@ -169,7 +179,16 @@ nav a:hover {
     transform: translateX(-50%);
     pointer-events: none;
     object-fit: contain;
-    filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.12));
+    animation: chromaShift 40s linear infinite;
+}
+
+@keyframes chromaShift {
+    0% {
+        filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.12)) hue-rotate(0deg);
+    }
+    100% {
+        filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.12)) hue-rotate(360deg);
+    }
 }
 
 /* Overlay UI panels */
@@ -2143,6 +2162,38 @@ nav a:hover {
     }
     .instructor-image-container {
         height: 280px;
+    }
+}
+
+/* --- Twinkling Starfield --- */
+.stars-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 75%;
+    pointer-events: none;
+    z-index: 1;
+    overflow: hidden;
+}
+
+.star {
+    position: absolute;
+    border-radius: 50%;
+    opacity: 0;
+    animation: twinkle 3s ease-in-out infinite;
+    box-shadow: 0 0 3px rgba(255, 255, 255, 0.5);
+}
+
+@keyframes twinkle {
+    0%, 100% {
+        opacity: 0.15;
+        transform: scale(0.75);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.15);
+        box-shadow: 0 0 6px rgba(255, 255, 255, 0.8);
     }
 }
 
