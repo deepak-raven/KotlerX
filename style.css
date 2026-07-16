@@ -1908,6 +1908,18 @@ body.theme-night .hero-img {
     transform: rotateZ(var(--rot)) rotateX(-90deg);
 }
 
+.bike-pink {
+    --bike-color: #ff2a5f;
+}
+
+.bike-yellow {
+    --bike-color: var(--neon-yellow);
+}
+
+.bike-cyan {
+    --bike-color: #00e5ff;
+}
+
 .bike-shadow {
     position: absolute;
     width: 1.2em;
