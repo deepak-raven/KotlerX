@@ -459,7 +459,7 @@ nav a:hover {
     display: flex;
     flex-direction: column;
     gap: 55px;
-    /* clip-path: url(#scroll-clip); */ /* Removed: #scroll-clip SVG element missing from HTML */
+    clip-path: url(#scroll-clip);
 }
 
 .scroll-section-flat {

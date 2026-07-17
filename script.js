@@ -489,4 +489,24 @@ document.addEventListener('DOMContentLoaded', () => {
             starsContainer.appendChild(star);
         }
     }
+
+    // --- Responsive Clip Path for Scroll Container ---
+    const clipPathElement = document.getElementById('scroll-clip-path');
+    const scrollContainer = document.querySelector('.scroll-container');
+
+    function updateClipPath() {
+        if (!clipPathElement || !scrollContainer) return;
+        const W = scrollContainer.offsetWidth;
+        const H = 30000; // Large height to cover all content expansion
+        const L = W / 2 - 240;
+
+        const path = `M 0 145 A 40 40 0 0 1 40 105 L ${L} 105 C ${L + 38.4} 105, ${L + 57.6} 80, ${L + 96} 80 C ${L + 129.6} 80, ${L + 144} 30, ${L + 192} 30 C ${L + 220.8} 30, ${L + 230.4} 0, ${L + 240} 0 C ${L + 249.6} 0, ${L + 259.2} 30, ${L + 288} 30 C ${L + 336} 30, ${L + 350.4} 80, ${L + 384} 80 C ${L + 422.4} 80, ${L + 441.6} 105, ${L + 480} 105 L ${W - 40} 105 A 40 40 0 0 1 ${W} 145 L ${W} ${H} L 0 ${H} Z`;
+
+        clipPathElement.setAttribute('d', path);
+    }
+
+    if (clipPathElement && scrollContainer) {
+        updateClipPath();
+        window.addEventListener('resize', updateClipPath);
+    }
 });
