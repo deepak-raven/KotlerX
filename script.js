@@ -109,172 +109,123 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- 6. Programs Horizontal Scrolling Carousel ---
-    const grid = document.querySelector('.programs-grid-new');
-    const prevBtn = document.querySelector('.prev-btn');
-    const nextBtn = document.querySelector('.next-btn');
-    const progressFill = document.querySelector('.carousel-progress-fill');
+    // --- 6. Programs Scroll Pinning Horizontal Scroll ---
+    const programsSection = document.getElementById('programs');
+    const programsTrack = document.querySelector('.programs-track');
+    const zoomCircle = document.querySelector('.programs-zoom-circle');
 
-    if (grid) {
-        let isDown = false;
-        let startX;
-        let scrollLeftStart;
-        
-        let velocity = 0;
-        let lastX;
-        let lastTime;
-        
-        let targetScroll = grid.scrollLeft;
-        let currentScroll = grid.scrollLeft;
-        let animationFrameId = null;
-        let isAnimating = false;
+    if (programsSection && programsTrack) {
+        const cards = programsTrack.querySelectorAll('.program-card');
+        const hoveredCardMap = new Map(); // Track which card is hovered
 
-        const getCardWidth = () => {
-            const card = grid.querySelector('.program-card-new');
-            const cardWidth = card ? card.offsetWidth : 340;
-            const gap = parseFloat(window.getComputedStyle(grid).gap) || 30;
-            return cardWidth + gap;
-        };
+        cards.forEach((card, idx) => {
+            let translateY = 0;
+            if (window.innerHeight >= 780) {
+                if ((idx + 1) % 3 === 1) translateY = -40;
+                else if ((idx + 1) % 3 === 2) translateY = 40;
+            }
+            card.dataset.translateY = translateY;
 
-        // Smoothly update scrollLeft using requestAnimationFrame (lerp)
-        const updateScroll = () => {
-            if (isAnimating) {
-                // If dragging, follow target quickly. If releasing, slide with inertia.
-                const ease = isDown ? 0.15 : 0.08;
-                const diff = targetScroll - currentScroll;
+            // Mouse enter/move/leave event listeners for dynamic 3D tilt
+            card.addEventListener('mouseenter', () => {
+                hoveredCardMap.set(card, true);
+                card.style.transition = 'transform 0.1s ease, box-shadow 0.3s ease, border-color 0.3s ease';
+            });
+
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
                 
-                if (Math.abs(diff) > 0.25) {
-                    currentScroll += diff * ease;
-                    grid.scrollLeft = currentScroll;
-                    animationFrameId = requestAnimationFrame(updateScroll);
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                
+                const percentX = (x - centerX) / centerX;
+                const percentY = (y - centerY) / centerY;
+                
+                const tiltX = percentY * -10; // Tilt up/down (max 10 deg)
+                const tiltY = percentX * 10;  // Tilt left/right (max 10 deg)
+                
+                const tY = parseFloat(card.dataset.translateY || '0');
+                
+                card.style.transform = `translateY(${tY - 12}px) perspective(1000px) rotateX(${tiltX}deg) rotateY(${tiltY}deg) scale(1.03)`;
+                
+                const img = card.querySelector('.program-card-img');
+                if (img) {
+                    img.style.transform = `translateX(${percentX * -15}px) translateY(${percentY * -15}px) scale(1.15)`;
+                }
+            });
+
+            card.addEventListener('mouseleave', () => {
+                hoveredCardMap.delete(card);
+                card.style.transition = 'transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.3s ease, border-color 0.3s ease';
+                
+                // Re-apply standard scroll transform state smoothly
+                setTimeout(() => {
+                    if (!hoveredCardMap.has(card)) {
+                        card.style.transition = '';
+                    }
+                }, 500);
+                
+                handleScroll();
+            });
+        });
+
+        const handleScroll = () => {
+            const rect = programsSection.getBoundingClientRect();
+            const sectionTop = window.pageYOffset + rect.top;
+            const sectionHeight = rect.height;
+            const viewportHeight = window.innerHeight;
+
+            const startScroll = sectionTop;
+            const endScroll = sectionTop + sectionHeight - viewportHeight;
+            const currentScroll = window.pageYOffset;
+
+            let pct = (currentScroll - startScroll) / (endScroll - startScroll);
+            pct = Math.max(0, Math.min(1, pct));
+
+            const maxTranslation = Math.max(0, programsTrack.scrollWidth - window.innerWidth);
+            const xTranslation = pct * maxTranslation;
+
+            programsTrack.style.transform = `translateX(-${xTranslation}px)`;
+
+            // Update card transforms based on scroll (only if not currently hovered)
+            cards.forEach(card => {
+                if (hoveredCardMap.has(card)) return;
+
+                const cardRect = card.getBoundingClientRect();
+                const cardCenter = cardRect.left + cardRect.width / 2;
+                const viewportCenter = window.innerWidth / 2;
+                
+                let distanceFromCenter = (cardCenter - viewportCenter) / (window.innerWidth / 2);
+                distanceFromCenter = Math.max(-1.5, Math.min(1.5, distanceFromCenter));
+
+                const rotateY = distanceFromCenter * -8; // Rotation based on scroll position
+                const tY = parseFloat(card.dataset.translateY || '0');
+
+                card.style.transform = `translateY(${tY}px) perspective(1000px) rotateY(${rotateY}deg)`;
+
+                const img = card.querySelector('.program-card-img');
+                if (img) {
+                    const imgTranslation = distanceFromCenter * 20;
+                    img.style.transform = `translateX(${imgTranslation}px) scale(1.15)`;
+                }
+            });
+
+            if (zoomCircle) {
+                if (pct > 0.85) {
+                    const zoomPct = (pct - 0.85) / 0.15;
+                    const scale = 1 + (zoomPct * 0.15);
+                    zoomCircle.style.transform = `scale(${scale})`;
                 } else {
-                    currentScroll = targetScroll;
-                    grid.scrollLeft = currentScroll;
-                    isAnimating = false;
-                    grid.classList.remove('active-drag');
+                    zoomCircle.style.transform = 'scale(1)';
                 }
             }
         };
 
-        const startAnimation = () => {
-            if (!isAnimating) {
-                isAnimating = true;
-                currentScroll = grid.scrollLeft;
-                animationFrameId = requestAnimationFrame(updateScroll);
-            }
-        };
-
-        // Nav Buttons scroll
-        if (prevBtn && nextBtn) {
-            nextBtn.addEventListener('click', () => {
-                const cardWidth = getCardWidth();
-                const maxScroll = grid.scrollWidth - grid.clientWidth;
-                // Find next snap position
-                let nextPos = Math.ceil((grid.scrollLeft + 5) / cardWidth) * cardWidth;
-                if (nextPos > maxScroll) nextPos = maxScroll;
-                
-                targetScroll = nextPos;
-                grid.classList.add('active-drag'); // disable css native scroll-snap/behavior temporarily
-                startAnimation();
-            });
-
-            prevBtn.addEventListener('click', () => {
-                const cardWidth = getCardWidth();
-                // Find prev snap position
-                let prevPos = Math.floor((grid.scrollLeft - 5) / cardWidth) * cardWidth;
-                if (prevPos < 0) prevPos = 0;
-                
-                targetScroll = prevPos;
-                grid.classList.add('active-drag');
-                startAnimation();
-            });
-        }
-
-        // Progress Bar Fill
-        const updateProgressBar = () => {
-            if (progressFill) {
-                const maxScroll = grid.scrollWidth - grid.clientWidth;
-                const ratio = maxScroll > 0 ? (grid.scrollLeft / maxScroll) : 0;
-                const minFill = 16.67;
-                const fillWidth = minFill + (ratio * (100 - minFill));
-                progressFill.style.width = `${fillWidth}%`;
-            }
-        };
-
-        grid.addEventListener('scroll', updateProgressBar);
-        window.addEventListener('resize', updateProgressBar);
-        setTimeout(updateProgressBar, 100);
-
-        // Drag to scroll logic
-        grid.addEventListener('mousedown', (e) => {
-            isDown = true;
-            grid.classList.add('active-drag');
-            startX = e.pageX - grid.offsetLeft;
-            scrollLeftStart = grid.scrollLeft;
-            targetScroll = grid.scrollLeft;
-            
-            lastX = e.pageX;
-            lastTime = performance.now();
-            velocity = 0;
-            
-            if (animationFrameId) {
-                cancelAnimationFrame(animationFrameId);
-                isAnimating = false;
-            }
-        });
-
-        grid.addEventListener('mouseleave', () => {
-            if (isDown) handleDragEnd();
-        });
-
-        grid.addEventListener('mouseup', () => {
-            if (isDown) handleDragEnd();
-        });
-
-        grid.addEventListener('mousemove', (e) => {
-            if (!isDown) return;
-            e.preventDefault();
-            
-            const x = e.pageX - grid.offsetLeft;
-            const walk = (x - startX) * 1.4; // drag multiplier
-            targetScroll = scrollLeftStart - walk;
-            
-            // Constrain targetScroll to bounds
-            const maxScroll = grid.scrollWidth - grid.clientWidth;
-            if (targetScroll < 0) targetScroll = 0;
-            if (targetScroll > maxScroll) targetScroll = maxScroll;
-
-            // Calculate velocity (pixels per millisecond)
-            const currentTime = performance.now();
-            const timeElapsed = currentTime - lastTime;
-            if (timeElapsed > 0) {
-                const distance = e.pageX - lastX;
-                velocity = distance / timeElapsed;
-            }
-            lastX = e.pageX;
-            lastTime = currentTime;
-
-            startAnimation();
-        });
-
-        const handleDragEnd = () => {
-            isDown = false;
-            
-            // Inertia calculation
-            const inertiaMultiplier = 120; // controls how far the inertia carries
-            let finalScroll = targetScroll - (velocity * inertiaMultiplier);
-            
-            // Snap to nearest card
-            const cardWidth = getCardWidth();
-            const maxScroll = grid.scrollWidth - grid.clientWidth;
-            
-            let snappedScroll = Math.round(finalScroll / cardWidth) * cardWidth;
-            if (snappedScroll < 0) snappedScroll = 0;
-            if (snappedScroll > maxScroll) snappedScroll = maxScroll;
-            
-            targetScroll = snappedScroll;
-            startAnimation();
-        };
+        window.addEventListener('scroll', handleScroll);
+        window.addEventListener('resize', handleScroll);
+        setTimeout(handleScroll, 100);
     }
 
     // --- 7. Experience KXGRID 3D Rotating Carousel Animation ---
