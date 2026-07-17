@@ -118,6 +118,32 @@ document.addEventListener('DOMContentLoaded', () => {
         const cards = programsTrack.querySelectorAll('.program-card');
         const hoveredCardMap = new Map(); // Track which card is hovered
 
+        const updateSingleCardTransform = (card) => {
+            const baseTY = parseFloat(card.dataset.translateY || '0');
+            const tY = parseFloat(card.dataset.scrollTranslateY || '0');
+            const tX = parseFloat(card.dataset.scrollTranslateX || '0');
+            const baseScale = parseFloat(card.dataset.scrollScale || '1');
+            
+            const tiltX = parseFloat(card.dataset.tiltX || '0');
+            const tiltY = parseFloat(card.dataset.tiltY || '0');
+            const percentX = parseFloat(card.dataset.percentX || '0');
+            const percentY = parseFloat(card.dataset.percentY || '0');
+            
+            let distanceFromCenter = tX / (window.innerWidth / 2);
+            const rotateY = distanceFromCenter * -12;
+            
+            const isHovered = hoveredCardMap.has(card);
+            const hoverOffset = isHovered ? -12 : 0;
+            const hoverScale = isHovered ? 1.03 : 1;
+            
+            card.style.transform = `translate(${tX}px, ${baseTY + tY + hoverOffset}px) perspective(1000px) rotateX(${tiltX}deg) rotateY(${rotateY + tiltY}deg) scale(${baseScale * hoverScale})`;
+            
+            const img = card.querySelector('.program-card-img');
+            if (img) {
+                img.style.transform = `translateX(${percentX * -15}px) translateY(${percentY * -15}px) scale(1.15)`;
+            }
+        };
+
         cards.forEach((card, idx) => {
             let translateY = 0;
             if (window.innerHeight >= 780) {
@@ -146,18 +172,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 const tiltX = percentY * -10; // Tilt up/down (max 10 deg)
                 const tiltY = percentX * 10;  // Tilt left/right (max 10 deg)
                 
-                const tY = parseFloat(card.dataset.translateY || '0');
+                card.dataset.tiltX = tiltX;
+                card.dataset.tiltY = tiltY;
+                card.dataset.percentX = percentX;
+                card.dataset.percentY = percentY;
                 
-                card.style.transform = `translateY(${tY - 12}px) perspective(1000px) rotateX(${tiltX}deg) rotateY(${tiltY}deg) scale(1.03)`;
-                
-                const img = card.querySelector('.program-card-img');
-                if (img) {
-                    img.style.transform = `translateX(${percentX * -15}px) translateY(${percentY * -15}px) scale(1.15)`;
-                }
+                updateSingleCardTransform(card);
             });
 
             card.addEventListener('mouseleave', () => {
                 hoveredCardMap.delete(card);
+                card.dataset.tiltX = 0;
+                card.dataset.tiltY = 0;
+                card.dataset.percentX = 0;
+                card.dataset.percentY = 0;
                 card.style.transition = 'transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.3s ease, border-color 0.3s ease';
                 
                 // Re-apply standard scroll transform state smoothly
@@ -184,41 +212,83 @@ document.addEventListener('DOMContentLoaded', () => {
             let pct = (currentScroll - startScroll) / (endScroll - startScroll);
             pct = Math.max(0, Math.min(1, pct));
 
-            const maxTranslation = Math.max(0, programsTrack.scrollWidth - window.innerWidth);
-            const xTranslation = pct * maxTranslation;
+            const progress = pct * cards.length; // From 0 to 6 (6 is the zoom circle)
 
-            programsTrack.style.transform = `translateX(-${xTranslation}px)`;
+            // Update card transforms based on scroll
+            cards.forEach((card, idx) => {
+                const diff = idx - progress;
 
-            // Update card transforms based on scroll (only if not currently hovered)
-            cards.forEach(card => {
-                if (hoveredCardMap.has(card)) return;
+                let translateX = 0;
+                let translateY = 0;
+                let scale = 1;
+                let zIndex = 1;
 
-                const cardRect = card.getBoundingClientRect();
-                const cardCenter = cardRect.left + cardRect.width / 2;
-                const viewportCenter = window.innerWidth / 2;
-                
-                let distanceFromCenter = (cardCenter - viewportCenter) / (window.innerWidth / 2);
-                distanceFromCenter = Math.max(-1.5, Math.min(1.5, distanceFromCenter));
-
-                const rotateY = distanceFromCenter * -8; // Rotation based on scroll position
-                const tY = parseFloat(card.dataset.translateY || '0');
-
-                card.style.transform = `translateY(${tY}px) perspective(1000px) rotateY(${rotateY}deg)`;
-
-                const img = card.querySelector('.program-card-img');
-                if (img) {
-                    const imgTranslation = distanceFromCenter * 20;
-                    img.style.transform = `translateX(${imgTranslation}px) scale(1.15)`;
+                if (diff < 0) {
+                    // Card has scrolled past (moving to the left, scaling up slightly)
+                    translateX = diff * 500; // moves left
+                    scale = 1 - diff * 0.15; // grows slightly or stays large
+                    zIndex = Math.max(1, 10 + Math.round(diff));
+                } else {
+                    // Card is in focus or approaching from the deep background
+                    // Exponential scale makes it look far away
+                    scale = Math.pow(0.35, diff);
+                    
+                    // Recedes to the right-depth
+                    translateX = Math.pow(diff, 0.7) * 450;
+                    
+                    // Curved approach path
+                    translateY = Math.sin(diff * 0.5) * 40;
+                    
+                    zIndex = Math.max(1, Math.round(100 - diff * 15));
                 }
+
+                card.style.opacity = '1';
+
+                // Save to dataset for hover interactions
+                card.dataset.scrollTranslateX = translateX;
+                card.dataset.scrollTranslateY = translateY;
+                card.dataset.scrollScale = scale;
+
+                // Update zIndex dynamically based on hover state
+                const isHovered = hoveredCardMap.has(card);
+                card.style.zIndex = isHovered ? 200 : zIndex;
+
+                updateSingleCardTransform(card);
             });
 
-            if (zoomCircle) {
-                if (pct > 0.85) {
-                    const zoomPct = (pct - 0.85) / 0.15;
-                    const scale = 1 + (zoomPct * 0.15);
-                    zoomCircle.style.transform = `scale(${scale})`;
+            // Update zoom circle container transform and opacity
+            const zoomContainer = programsTrack.querySelector('.programs-zoom-container');
+            if (zoomContainer) {
+                const diff = cards.length - progress; // index 6
+
+                let translateX = 0;
+                let translateY = 0;
+                let scale = 1;
+                let zIndex = 1;
+
+                if (diff < 0) {
+                    // Zoom circle scales up extra large as scroll goes beyond
+                    scale = 1 + Math.abs(diff) * 1.5;
+                    zIndex = 100;
                 } else {
-                    zoomCircle.style.transform = 'scale(1)';
+                    scale = Math.pow(0.35, diff);
+                    translateX = Math.pow(diff, 0.7) * 450;
+                    translateY = Math.sin(diff * 0.5) * 40;
+                    zIndex = Math.max(1, Math.round(100 - diff * 15));
+                }
+
+                zoomContainer.style.zIndex = zIndex;
+                zoomContainer.style.opacity = '1';
+                
+                zoomContainer.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+                
+                if (zoomCircle) {
+                    if (diff <= 0) {
+                        const scaleInner = 1 + Math.abs(diff) * 0.5;
+                        zoomCircle.style.transform = `scale(${scaleInner})`;
+                    } else {
+                        zoomCircle.style.transform = 'scale(1)';
+                    }
                 }
             }
         };
